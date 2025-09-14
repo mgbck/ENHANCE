@@ -1,16 +1,21 @@
 import numpy as np
-from keras.preprocessing import image
-from keras.preprocessing.image import ImageDataGenerator
+import tensorflow
+from tensorflow.keras.preprocessing import image
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-def generate_data_1(directory, augmentation, batchsize, file_list, label_1):
+def generate_data_1(directory, augmentation, batchsize, file_list, label_1, class_weights):
     i = 0
     while True:
         image_batch = []
         label_1_batch = []
+        sample_weights = []
+
         for b in range(batchsize):
             if i == (len(file_list)):
                 i = 0
-            img = image.load_img(directory + '/' + file_list.iloc[i] + '.jpg', grayscale=False, target_size=(384, 384))
+
+            print(file_list)
+            img = image.load_img(directory + '/' + file_list.iloc[i] + '.jpg', target_size=(384, 384), color_mode="rgb")
             img = image.img_to_array(img)
 
             if augmentation:
@@ -31,9 +36,10 @@ def generate_data_1(directory, augmentation, batchsize, file_list, label_1):
 
             image_batch.append(img)
             label_1_batch.append(label_1.iloc[i])
+            sample_weights.append(class_weights[label_1.iloc[i]])
             i = i + 1
 
-        yield (np.asarray(image_batch), np.asarray(label_1_batch))
+        yield (np.asarray(image_batch), np.asarray(label_1_batch), np.asarray(sample_weights))
 
 def generate_data_2(directory, augmentation, batch_size, file_list, label_1, label_2, sample_weights):
 

@@ -21,8 +21,9 @@ TENSOR_FLOW_GPU = '2.2.0'
 
 ## Imports
 from constants import *
-import os, re
-import keras.backend.tensorflow_backend
+import os, re, shutil
+#import tensorflow.keras.backend
+import tensorflow.keras as keras
 from sklearn.metrics import roc_auc_score
 from generate_data import generate_data_1
 from get_data import get_baseline_data
@@ -30,12 +31,10 @@ from report_results import report_acc_and_loss, report_auc
 import numpy as np
 import pandas as pd
 
-## Settings
-
-
 ## Set working directory
-workdir = re.sub("(?<={})[\w\W]*".format(PROJECT), "", os.getcwd())
-os.chdir(workdir)
+# workdir = re.sub("(?<={})[\w\W]*".format(PROJECT), "", os.getcwd())
+# print(workdir)
+# os.chdir(workdir)
 
 ## Set up pipeline folder if missing
 pipeline = os.path.join('empirical', '2_pipeline', NAME)
@@ -54,15 +53,21 @@ def read_data(seed):
     global test_id, test_label_c, class_weights, train, validation
     global train_id, train_label_c, valid_id, valid_label_c, test_id, test_label_c, class_weights
 
+    ground_path = os.path.join('empirical', '0_data')
     ground_truth_file = os.path.join('empirical', '0_data', 'external', 'ISIC-2017_Training_Part3_GroundTruth.csv')
+
+    if not os.path.exists(ground_path):
+        prev = os.path.join('..', '0_data')
+        shutil.copytree('../', ground_path)
+
     train_id, train_label_c, valid_id, valid_label_c, test_id, test_label_c, class_weights = get_baseline_data(
         ground_truth_file, seed, VERBOSE)
 
     data_path = os.path.join('empirical', '0_data', 'external')
     train = generate_data_1(directory=data_path, augmentation=True, batchsize=BATCH_SIZE, file_list=train_id,
-                            label_1=train_label_c)
+                            label_1=train_label_c, class_weights=class_weights)
     validation = generate_data_1(directory=data_path, augmentation=False, batchsize=BATCH_SIZE, file_list=valid_id,
-                                 label_1=valid_label_c)
+                                 label_1=valid_label_c, class_weights=class_weights)
 
 
 def build_model():
@@ -108,7 +113,7 @@ def build_model():
             model = keras.models.Model(conv_base.input, outputs=[out_class])
 
     model.compile(loss='binary_crossentropy',
-                  optimizer=keras.optimizers.RMSprop(lr=2e-5),
+                  optimizer=keras.optimizers.RMSprop(learning_rate=2e-5),
                   metrics=['acc'])
 
     if VERBOSE:
@@ -123,13 +128,13 @@ def fit_model(model):
         steps_per_epoch=STEPS_PER_EPOCH,
         epochs=EPOCHS,
         validation_steps=VALIDATION_STEPS,
-        validation_data=validation,
-        class_weight=class_weights)
+        validation_data=validation)
+        #class_weight=class_weights)
 
 
 def predict_model(model):
     test = generate_data_1(directory=os.path.join('empirical', '0_data', 'external'), augmentation=False,
-                           batchsize=BATCH_SIZE, file_list=test_id, label_1=test_label_c)
+                           batchsize=BATCH_SIZE, file_list=test_id, label_1=test_label_c, class_weights=class_weights)
     predictions = model.predict_generator(test, steps=PREDICTION_STEPS)
     y_true = test_label_c
     delta_size = predictions.size - y_true.count()

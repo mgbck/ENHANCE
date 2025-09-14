@@ -221,7 +221,7 @@ def get_automated_color(path, verbose):
 # ---------
 def get_baseline_data(ground_truth_file, seed, verbose):
     df = pd.read_csv(ground_truth_file)
-    class_label = df['melanoma'] + df['seborrheic_keratosis']
+    class_label = ((df['melanoma'] + df['seborrheic_keratosis']) > 0)
     class_id = df['image_id']
 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -234,13 +234,23 @@ def get_baseline_data(ground_truth_file, seed, verbose):
     X_train, X_validate, y_train, y_validate = train_test_split(
         X_train,
         y_train,
-        test_size=0.2,
+        test_size=0.20,
         random_state=seed,
         shuffle=True,
         stratify=y_train)
 
-    class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
-    class_weights = {i: class_weights[i] for i in range(2)}
+    y_train_arr = y_train.to_numpy().ravel()          # ensure 1‑D ndarray
+    unique_classes = np.unique(y_train_arr)
+
+    raw_weights = class_weight.compute_class_weight(class_weight='balanced',
+                                           classes=unique_classes,
+                                           y=y_train_arr)
+
+    class_weights = {cls: w for cls, w in zip(unique_classes, raw_weights)}
+
+
+    # class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+    # class_weights = {i: class_weights[i] for i in range(2)}
 
     if verbose:
         print('in train set      = \n' + str(y_train.value_counts()))

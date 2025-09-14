@@ -34,7 +34,7 @@ KERAS_VERSION = '2.3.1'
 
 ## Imports
 from constants import *
-import keras.backend.tensorflow_backend
+import tensorflow.keras as keras
 from sklearn.metrics import roc_auc_score
 from generate_data import generate_data_2
 from get_data import get_multi_task_data, get_path
