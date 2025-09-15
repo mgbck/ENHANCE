@@ -1,6 +1,7 @@
 import sys
 import os
 import urllib.request
+import zipfile
 import urllib.error
 
 from pathlib import Path
@@ -49,18 +50,54 @@ def download(url: str, dest_path: Path):
         temp_path.rename(dest_path)
 
 
-def main(target_dir: Path):
-    dest = os.path.join(target_dir, os.path.basename(URL))
+def unzip(zip_path: Path, extract_to: Path) -> None:
+    if not zip_path.is_file():
+        raise FileNotFoundError(f"Zip file not found: {zip_path}")
 
-    if os.path.exists(dest_file):
+    extract_to.mkdir(parents=True, exist_ok=True)
+    print(f"Extracting {zip_path.name} → {extract_to}")
+
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        members = zf.infolist()
+        total_members = len(members)
+
+        for i, member in enumerate(members, start=1):
+            if member.is_dir():
+                continue
+
+            data = zf.read(member)
+            dest_path = extract_to / Path(member.filename).name
+
+            with open(dest_path, "wb") as out_fp:
+                out_fp.write(data)
+
+            print(
+                f"\r  [{i:3}/{total_members}] " f"{member.filename[:60]:60}",
+                end="",
+                flush=True,
+            )
+
+    print("\nExtraction finished.")
+
+
+def main(target_dir: Path):
+    dest = target_dir / os.path.basename(URL)
+
+    if dest.exists():
         resp = (
-            input(f"The file '{dest_file}' already exists. Overwrite?[y/N] ")
-            .strip()
-            .lower()
+            input(f"The file '{dest}' already exists. Overwrite?[y/N] ").strip().lower()
         )
         if resp != "y":
             print("Aborting – existing file kept.")
+            try:
+                unzip(dest, target_dir)
+            except Exception as exc:
+                print(f"\nError while extracting: {exc}")
+                sys.exit(1)
+
             return
+        else:
+            dest.unlink()
 
     try:
         download(URL, dest)
@@ -68,9 +105,15 @@ def main(target_dir: Path):
         print(f"\nError while downloading: {e.reason}")
         sys.exit(1)
 
-    print(f"\nFile saved to: {dest_file}")
+    try:
+        unzip(dest, target_dir)
+    except Exception as exc:
+        print(f"\nError while extracting: {exc}")
+        sys.exit(1)
+
+    print(f"\nFile saved to: {dest}")
 
 
 if __name__ == "__main__":
     target_directory = Path(os.path.join(os.getcwd(), "external/")).resolve()
-    main("external/")
+    main(target_directory)
