@@ -17,3 +17,18 @@ The 1_code folder contains the baseline and multi-task models used based on thre
 The remaining code files contain helper functions used by the above files.
 
 ## Build instructions
+From the project's root directory:
+```bash
+# Create virtual environment
+python3 -m venv .venv
+# Go to the code directory
+cd 1_code/
+# Activate virtual environment in your local context
+source ../.venv/bin/activate # (or Windows equivalent if you use PowerShell)
+# Install Poetry
+pip install poetry
+# Install dependencies
+poetry update
+# Download the full dataset (ISIC) for the training 
+python3 ../0_data/get_isic.py
+```
