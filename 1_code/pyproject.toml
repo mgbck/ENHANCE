@@ -1,24 +1,21 @@
-[project]
+[tool.poetry]
 name = "1-code"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "Michal Gorlas",email = "m.gorlas@student.fontys.nl"}
-]
-license = {text = "MIT"}
+authors = ["Michal Gorlas <m.gorlas@student.fontys.nl>"]
+license = "MIT"
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "keras (==3.11.3)",
-    "matplotlib (==3.10.6)",
-    "numpy (==2.3.3)",
-    "pandas (==2.3.2)",
-    "scikit-learn (==1.7.2)",
-    "scipy (==1.16.2)",
-    "scikit-image (==0.25.2)",
-    "tensorflow (==2.20.0)"
-]
 
+[tool.poetry.dependencies]
+python = "^3.11"
+keras = "3.11.3"
+matplotlib = "3.10.6"
+numpy = "2.3.3"
+pandas = "2.3.2"
+scikit-learn = "1.7.2"
+scipy = "1.16.2"
+scikit-image = "0.25.2"
+tensorflow = "2.20.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

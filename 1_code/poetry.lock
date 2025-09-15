@@ -943,7 +943,11 @@ files = [
 ]
 
 [package.dependencies]
-numpy = {version = ">=2.1.0", markers = "python_version >= \"3.13\""}
+numpy = [
+    {version = ">=1.23.3", markers = "python_version >= \"3.11\""},
+    {version = ">=2.1.0", markers = "python_version >= \"3.13\""},
+    {version = ">=1.26.0", markers = "python_version == \"3.12\""},
+]
 
 [package.extras]
 dev = ["absl-py", "pyink", "pylint (>=2.6.0)", "pytest", "pytest-xdist"]
@@ -1254,7 +1258,10 @@ files = [
 ]
 
 [package.dependencies]
-numpy = {version = ">=1.26.0", markers = "python_version >= \"3.12\""}
+numpy = [
+    {version = ">=1.23.2", markers = "python_version == \"3.11\""},
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
 tzdata = ">=2022.7"
@@ -2055,5 +2062,5 @@ files = [
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.13"
-content-hash = "c373b676e9554669f55b02978a002a30f32205139365a52ce5ace1221a0717bd"
+python-versions = "^3.11"
+content-hash = "3c43fcfafd3e44053fdd8fde9adfb56592e8d3403b8ed1e3cc6b17f0427e105f"
